@@ -1,0 +1,4 @@
+fastapi
+unicorn
+jinja2
+aiofiles
