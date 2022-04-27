@@ -1,0 +1,6 @@
+fastapi
+unicorn
+jinja2
+aiofiles
+odmantic
+pymongo[srv]
