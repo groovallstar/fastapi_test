@@ -1,4 +1,3 @@
-from ast import keyword
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -26,6 +25,18 @@ async def root(request: Request):
 async def search(request: Request, q: str):
 
     keyword = q
+    if not keyword:
+        return templates.TemplateResponse(
+            "./index.html",
+            context = {"request": request, "title": "empty"})
+
+    if await mongodb.engine.find_one(BookModel, BookModel.keyword == keyword):
+        books = await mongodb.engine.find(BookModel, BookModel.keyword == keyword)
+        return templates.TemplateResponse(
+            "./index.html",
+            {"request": request, "title": "콜렉터", "books": books},
+        )
+
     naver_book_scraper = NaverBookScraper()
     books = await naver_book_scraper.search(keyword, 1)
     book_models = []
@@ -41,7 +52,7 @@ async def search(request: Request, q: str):
     await mongodb.engine.save_all(book_models)
     return templates.TemplateResponse(
         "./index.html",
-        {"request": request, "title": "콜렉터", "keyword": q}
+        {"request": request, "title": "콜렉터", "books": books}
     )
 
 @app.on_event("startup")
